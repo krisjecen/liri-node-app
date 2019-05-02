@@ -10,12 +10,15 @@ require("dotenv").config();
 // initialize variables
 // =============================================================================
 
+// -----------------------------------------------------------------------------
+// required files and packages
+// -----------------------------------------------------------------------------
 var keys = require("./keys.js");
 var axios = require('axios');
+var Spotify = require('node-spotify-api');
 
 // TODO define Spotify (currently throws error Spotify is not defined)
-// var spotify = new Spotify(keys.spotify);
-
+var spotify = new Spotify(keys.spotify);
 // grabs the string after node & the file name in the command line, should be a command
 var userCommand = process.argv[2];
 // grabs the string after the command
@@ -42,16 +45,39 @@ var userQuery = process.argv[3];
 // -----------------------------------------------------------------------------
 // Spotify API functions (command: spotify-this-song)
 // -----------------------------------------------------------------------------
-// function getSongInfo()
-    // if no song is provided, default to "The Sign" by Ace of Base
+function getSongInfo() {
+    // TODO: if no song is provided, default to "The Sign" by Ace of Base
+    // requests data for the userQuery song name
+    spotify.search({ type: 'track', query: `${userQuery}` }, function(err, data) {
+        if (err) {
+          return console.log('Error occurred: ' + err);
+        }
+       
+      // console.log(data); 
+      // console.log(data.tracks); 
+      // console.log(data.tracks.items[0]); 
+        displaySongInfo(data)
 
+
+
+      });
+}
     // Song info to retrieve:
     // Artist(s)
     // The song's name
     // A preview link of the song from Spotify
     // The album that the song is from
     
-// function displaySongInfo()
+function displaySongInfo(data) {
+    console.log(`
+---------------------------------------------------------------------------------
+Artist(s): ${data.tracks.items[0].artists[0].name} 
+Song name: ${data.tracks.items[0].name} 
+Preview link: ${data.tracks.items[0].preview_url} 
+Appears on album: ${data.tracks.items[0].album.name}
+---------------------------------------------------------------------------------
+    `); 
+}
 
 // -----------------------------------------------------------------------------
 // OMDB API functions (command: movie-this)
@@ -98,7 +124,7 @@ switch (userCommand) {
         // displayConcertInfo()
         break;
     case "spotify-this-song":
-        // getSongInfo()
+        getSongInfo()
         // displaySongInfo()
         break;
     case "movie-this":
