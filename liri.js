@@ -11,10 +11,15 @@ require("dotenv").config();
 // =============================================================================
 
 var keys = require("./keys.js");
+var axios = require('axios');
 
-var spotify = new Spotify(keys.spotify);
+// TODO define Spotify (currently throws error Spotify is not defined)
+// var spotify = new Spotify(keys.spotify);
 
+// grabs the string after node & the file name in the command line, should be a command
 var userCommand = process.argv[2];
+// grabs the string after the command
+// TODO: this is simplified, need to make it grab multiple strings (if user uses spaces)
 var userQuery = process.argv[3];
 
 // =============================================================================
@@ -52,20 +57,35 @@ var userQuery = process.argv[3];
 // OMDB API functions (command: movie-this)
 // -----------------------------------------------------------------------------
 // the user enters the movie-this command followed by a movie title
-// function getMovieInfo()
+function getMovieInfo() {
+    console.log(userQuery);
     // if no movie entered, default to "Mr. Nobody"
+    if (userQuery === undefined) {
+        userQuery = "Mr. Nobody.";
+    }
+    
+    axios.get(`http://www.omdbapi.com/?t=${userQuery}&y=&plot=short&apikey=trilogy`)
+    .then(function (response) {
+        //console.log(response);
+        //console.log(response.data.Ratings);
+        displayMovieInfo(response)
+    })
+}
 
-    /*
-    * Title of the movie.
-    * Year the movie came out.
-    * IMDB Rating of the movie.
-    * Rotten Tomatoes Rating of the movie.
-    * Country where the movie was produced.
-    * Language of the movie.
-    * Plot of the movie.
-    * Actors in the movie.
-    */
-// function displayMovieInfo()
+function displayMovieInfo(response) {
+    console.log(`
+---------------------------------------------------------------------------------
+Movie title: ${response.data.Title}
+Year released: ${response.data.Year}
+IMDB Rating: ${response.data.imdbRating}
+Rotten Tomatoes Rating: ${response.data.Ratings[1].Value}
+Produced in (country): ${response.data.Country}
+Language(s): ${response.data.Language}
+Plot: ${response.data.Plot}
+Actors: ${response.data.Actors}
+---------------------------------------------------------------------------------
+        `)
+}
 
 // do-what-it-says
 // function readRandomTxtFile()
@@ -82,8 +102,7 @@ switch (userCommand) {
         // displaySongInfo()
         break;
     case "movie-this":
-        // getMovieInfo()
-        // displayMovieInfo()
+        getMovieInfo()
         break;
     case "do-what-it-says":
         // readRandomTxtFile()
