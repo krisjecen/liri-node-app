@@ -151,7 +151,12 @@ function getMovieInfo() {
 }
 
 function displayMovieInfo(response) {
-    console.log(`
+    formatQueryForDisplay(userQuery)
+    var output = `
+---------------------------------------------------------------------------------
+Here is the film I found when I searched for ${formattedUserQuery}:
+---------------------------------------------------------------------------------
+
 ---------------------------------------------------------------------------------
 Movie title: ${response.data.Title}
 Year released: ${response.data.Year}
@@ -162,7 +167,10 @@ Language(s): ${response.data.Language}
 Plot: ${response.data.Plot}
 Actors: ${response.data.Actors}
 ---------------------------------------------------------------------------------
-        `)
+        `;
+    console.log(output);
+
+logOutputToTxtFile(output)
 }
 
 // -----------------------------------------------------------------------------
@@ -184,6 +192,17 @@ function readRandomTxtFile() {
     userQuery = dataArr[1];
     // run the switch case with the given command
     runLiri(userCommand)
+    })
+}
+
+// bonus: log the results
+function logOutputToTxtFile(output) {
+    fs.appendFile('log.txt', output, function(err) {
+        if (err) {
+            console.log(err)
+          } else { // If no error is experienced, display success message to node console.
+            console.log('Content added to log!')
+          }
     })
 }
 
