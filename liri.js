@@ -18,13 +18,25 @@ var axios = require('axios');
 var Spotify = require('node-spotify-api');
 var moment = require('moment');
 
-// TODO define Spotify (currently throws error Spotify is not defined)
 var spotify = new Spotify(keys.spotify);
 // grabs the string after node & the file name in the command line, should be a command
 var userCommand = process.argv[2];
-// grabs the string after the command
-// TODO: this is simplified, need to make it grab multiple strings (if user uses spaces)
+// grabs the string after the command as the default query
 var userQuery = process.argv[3];
+/* grab multiple strings (if user enters multiple words and uses spaces)
+and combines them into one single string
+*/
+function queryCombine(nextWordinQuery) {
+    userQuery += "+" + nextWordinQuery;
+}
+
+/* for any queries that are more than one word (string / entry) long, this for loop
+combines them together
+*/
+for (let i = 4; i < process.argv.length; i++) {
+    queryCombine(process.argv[i]);
+    console.log(userQuery);
+}
 
 // =============================================================================
 // declare functions
@@ -112,7 +124,7 @@ Appears on album: ${data.tracks.items[0].album.name}
 // -----------------------------------------------------------------------------
 // the user enters the movie-this command followed by a movie title
 function getMovieInfo() {
-    console.log(userQuery);
+    // console.log(userQuery);
     // if no movie entered, default to "Mr. Nobody"
     if (userQuery === undefined) {
         userQuery = "Mr. Nobody.";
