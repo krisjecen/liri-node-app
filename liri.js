@@ -33,7 +33,15 @@ var userQuery = process.argv[3];
 // Bands in Town API functions
 // -----------------------------------------------------------------------------
 // concert-this
-// function getConcertInfo
+function getConcertInfo() {
+    // test case Skrillex (no user input yet)
+    axios.get(`https://rest.bandsintown.com/artists/Skrillex/events?app_id=codingbootcamp&date=upcoming`)
+        .then(function (response) {
+            // need to dig into the JSON to display event details
+            console.log(response);
+            // displayConcertInfo(response)
+        })
+}
 
     // Concert info to retrieve:
     // Name of the venue
@@ -120,12 +128,11 @@ Actors: ${response.data.Actors}
 // switch case
 switch (userCommand) {
     case "concert-this":
-        // getConcertInfo()
+        getConcertInfo()
         // displayConcertInfo()
         break;
     case "spotify-this-song":
         getSongInfo()
-        // displaySongInfo()
         break;
     case "movie-this":
         getMovieInfo()
