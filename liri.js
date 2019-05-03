@@ -23,6 +23,7 @@ var spotify = new Spotify(keys.spotify);
 var userCommand = process.argv[2];
 // grabs the string after the command as the default query
 var userQuery = process.argv[3];
+var formattedUserQuery = null;
 /* grab multiple strings (if user enters multiple words and uses spaces)
 and combines them into one single string
 */
@@ -36,6 +37,10 @@ combines them together
 for (let i = 4; i < process.argv.length; i++) {
     queryCombine(process.argv[i]);
     console.log(userQuery);
+}
+
+function formatQueryForDisplay(userQuery) {
+    formattedUserQuery = userQuery.replace(/\+/g, " ");
 }
 
 // =============================================================================
@@ -56,10 +61,10 @@ function getConcertInfo() {
 }
 
 function displayConcertInfo(response) {
-    
+    formatQueryForDisplay(userQuery)
     console.log(`
 ---------------------------------------------------------------------------------
-Here are some upcoming concerts I found for ${userQuery}:
+Here are some upcoming concerts I found for ${formattedUserQuery}:
 ---------------------------------------------------------------------------------
     `);
     
@@ -77,46 +82,43 @@ Venue location: ${response.data[eventCount].venue.city}, ${response.data[eventCo
 ---------------------------------------------------------------------------------
         `);
     }
-
-    // console.log(formattedConcertDate);
 }
 
 // -----------------------------------------------------------------------------
 // Spotify API functions (command: spotify-this-song)
 // -----------------------------------------------------------------------------
 function getSongInfo() {
-    // TODO: if no song is provided, default to "The Sign" by Ace of Base
+    // if no song is provided, default to "The Sign" by Ace of Base (assignment instructions)
+    if (userQuery === undefined) {
+        userQuery = "The Sign";
+    }
     // requests data for the userQuery song name
-    spotify.search({ type: 'track', query: `${userQuery}` }, function(err, data) {
+    spotify.search({ type: 'track', query: `${userQuery}`, limit: 5}, function(err, data) {
         if (err) {
           return console.log('Error occurred: ' + err);
         }
 
-      // console.log(data);
-      // console.log(data.tracks);
-      // console.log(data.tracks.items[0]);
         displaySongInfo(data)
-
-
-
       });
 }
 function displaySongInfo(data) {
-    // TODO: update with for loop to display multiple songs?
+    formatQueryForDisplay(userQuery)
     console.log(`
 ---------------------------------------------------------------------------------
-Here are some tracks I found when I searched for ${userQuery}:
+Here are some tracks I found when I searched for ${formattedUserQuery}:
 ---------------------------------------------------------------------------------
         `);
-
+    // displays info for the first five songs that are found from the userQuery
+    for (let songResultNumber = 0; songResultNumber < 5; songResultNumber++) {
     console.log(`
 ---------------------------------------------------------------------------------
-Artist(s): ${data.tracks.items[0].artists[0].name}
-Song name: ${data.tracks.items[0].name}
-Preview link (if available): ${data.tracks.items[0].preview_url}
-Appears on album: ${data.tracks.items[0].album.name}
+Artist(s): ${data.tracks.items[songResultNumber].artists[0].name}
+Song name: ${data.tracks.items[songResultNumber].name}
+Preview link (if available): ${data.tracks.items[songResultNumber].preview_url}
+Appears on album: ${data.tracks.items[songResultNumber].album.name}
 ---------------------------------------------------------------------------------
     `);
+    }
 }
 
 // -----------------------------------------------------------------------------
