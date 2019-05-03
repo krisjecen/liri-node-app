@@ -17,6 +17,8 @@ var keys = require("./keys.js");
 var axios = require('axios');
 var Spotify = require('node-spotify-api');
 var moment = require('moment');
+const fs = require('fs')
+
 
 var spotify = new Spotify(keys.spotify);
 // grabs the string after node & the file name in the command line, should be a command
@@ -24,6 +26,15 @@ var userCommand = process.argv[2];
 // grabs the string after the command as the default query
 var userQuery = process.argv[3];
 var formattedUserQuery = null;
+
+// =============================================================================
+// declare functions
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// userQuery formatting functions
+// -----------------------------------------------------------------------------
+
 /* grab multiple strings (if user enters multiple words and uses spaces)
 and combines them into one single string
 */
@@ -43,9 +54,6 @@ function formatQueryForDisplay(userQuery) {
     formattedUserQuery = userQuery.replace(/\+/g, " ");
 }
 
-// =============================================================================
-// declare functions
-// =============================================================================
 
 // -----------------------------------------------------------------------------
 // Bands in Town API functions
@@ -91,6 +99,9 @@ function getSongInfo() {
     // if no song is provided, default to "The Sign" by Ace of Base (assignment instructions)
     if (userQuery === undefined) {
         userQuery = "The Sign";
+        /* "The Sign" by Ace of Base currently displays as the 11th result in the list
+        if I allow for > 10 results to display.
+        */
     }
     // requests data for the userQuery song name
     spotify.search({ type: 'track', query: `${userQuery}`, limit: 5}, function(err, data) {
@@ -101,6 +112,7 @@ function getSongInfo() {
         displaySongInfo(data)
       });
 }
+
 function displaySongInfo(data) {
     formatQueryForDisplay(userQuery)
     console.log(`
@@ -134,8 +146,6 @@ function getMovieInfo() {
 
     axios.get(`http://www.omdbapi.com/?t=${userQuery}&y=&plot=short&apikey=trilogy`)
     .then(function (response) {
-        //console.log(response);
-        //console.log(response.data.Ratings);
         displayMovieInfo(response)
     })
 }
@@ -155,23 +165,46 @@ Actors: ${response.data.Actors}
         `)
 }
 
-// do-what-it-says
-// function readRandomTxtFile()
+// -----------------------------------------------------------------------------
+// read random.txt file: take command and query and run LIRI (do-what-it-says)
+// -----------------------------------------------------------------------------
 
+function readRandomTxtFile() {
+    // read the random.txt file
+    fs.readFile('random.txt', 'utf8', function (error, data) {
+    // If the code experiences any errors it will log the error to the console.
+    if (error) {
+        return console.log(error)
+    }
+    // split the text file data by commas and place into an array
+    var dataArr = data.split(',')
 
-// switch case
-switch (userCommand) {
-    case "concert-this":
-        getConcertInfo()
-        // displayConcertInfo()
-        break;
-    case "spotify-this-song":
-        getSongInfo()
-        break;
-    case "movie-this":
-        getMovieInfo()
-        break;
-    case "do-what-it-says":
-        // readRandomTxtFile()
-    break;
+    // assign command and query values based on the text file data
+    userCommand = dataArr[0];
+    userQuery = dataArr[1];
+    // run the switch case with the given command
+    runLiri(userCommand)
+    })
 }
+
+function runLiri(userCommand) {
+    // switch case
+    switch (userCommand) {
+        case "concert-this":
+            getConcertInfo()
+            // displayConcertInfo()
+            break;
+        case "spotify-this-song":
+            getSongInfo()
+            break;
+        case "movie-this":
+            getMovieInfo()
+            break;
+        case "do-what-it-says":
+            readRandomTxtFile()
+        break;
+    }
+}
+
+// takes in user input and runs the appropriate functions / searches
+runLiri(userCommand)
