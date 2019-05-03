@@ -1,6 +1,6 @@
 // =============================================================================
 // JS for LIRI Bot
-/* takes one of four user commands + a query about bands, songs, movies, and 
+/* takes one of four user commands + a query about bands, songs, movies, and
 outputs details about the user's query */
 // =============================================================================
 
@@ -16,6 +16,7 @@ require("dotenv").config();
 var keys = require("./keys.js");
 var axios = require('axios');
 var Spotify = require('node-spotify-api');
+var moment = require('moment');
 
 // TODO define Spotify (currently throws error Spotify is not defined)
 var spotify = new Spotify(keys.spotify);
@@ -35,20 +36,38 @@ var userQuery = process.argv[3];
 // concert-this
 function getConcertInfo() {
     // test case Skrillex (no user input yet)
-    axios.get(`https://rest.bandsintown.com/artists/Skrillex/events?app_id=codingbootcamp&date=upcoming`)
+    axios.get(`https://rest.bandsintown.com/artists/${userQuery}/events?app_id=codingbootcamp&date=upcoming`)
         .then(function (response) {
-            // need to dig into the JSON to display event details
-            console.log(response);
-            // displayConcertInfo(response)
+
+            displayConcertInfo(response)
         })
 }
 
-    // Concert info to retrieve:
-    // Name of the venue
-    // Venue location
-    // Date of the Event (use moment to format this as "MM/DD/YYYY")
+function displayConcertInfo(response) {
+    
+    console.log(`
+---------------------------------------------------------------------------------
+Here are some upcoming concerts I found for ${userQuery}:
+---------------------------------------------------------------------------------
+    `);
+    
+    for (let eventCount = 1; eventCount < 6; eventCount++) {
+        // grabbing the unformatted concert date
+        let concertDate = response.data[eventCount].datetime;
+        // reformatting with moment
+        let formattedConcertDate = moment(concertDate).format("MM/DD/YYYY");
+        // displaying event info to the terminal
+        console.log(`
+---------------------------------------------------------------------------------
+Date: ${formattedConcertDate}
+Venue: ${response.data[eventCount].venue.name}
+Venue location: ${response.data[eventCount].venue.city}, ${response.data[eventCount].venue.country}
+---------------------------------------------------------------------------------
+        `);
+    }
 
-// function displayConcertInfo
+    // console.log(formattedConcertDate);
+}
 
 // -----------------------------------------------------------------------------
 // Spotify API functions (command: spotify-this-song)
@@ -60,31 +79,32 @@ function getSongInfo() {
         if (err) {
           return console.log('Error occurred: ' + err);
         }
-       
-      // console.log(data); 
-      // console.log(data.tracks); 
-      // console.log(data.tracks.items[0]); 
+
+      // console.log(data);
+      // console.log(data.tracks);
+      // console.log(data.tracks.items[0]);
         displaySongInfo(data)
 
 
 
       });
 }
-    // Song info to retrieve:
-    // Artist(s)
-    // The song's name
-    // A preview link of the song from Spotify
-    // The album that the song is from
-    
 function displaySongInfo(data) {
+    // TODO: update with for loop to display multiple songs?
     console.log(`
 ---------------------------------------------------------------------------------
-Artist(s): ${data.tracks.items[0].artists[0].name} 
-Song name: ${data.tracks.items[0].name} 
-Preview link: ${data.tracks.items[0].preview_url} 
+Here are some tracks I found when I searched for ${userQuery}:
+---------------------------------------------------------------------------------
+        `);
+
+    console.log(`
+---------------------------------------------------------------------------------
+Artist(s): ${data.tracks.items[0].artists[0].name}
+Song name: ${data.tracks.items[0].name}
+Preview link (if available): ${data.tracks.items[0].preview_url}
 Appears on album: ${data.tracks.items[0].album.name}
 ---------------------------------------------------------------------------------
-    `); 
+    `);
 }
 
 // -----------------------------------------------------------------------------
@@ -97,7 +117,7 @@ function getMovieInfo() {
     if (userQuery === undefined) {
         userQuery = "Mr. Nobody.";
     }
-    
+
     axios.get(`http://www.omdbapi.com/?t=${userQuery}&y=&plot=short&apikey=trilogy`)
     .then(function (response) {
         //console.log(response);
