@@ -18,13 +18,16 @@ var axios = require('axios');
 var Spotify = require('node-spotify-api');
 var moment = require('moment');
 const fs = require('fs')
-
-
 var spotify = new Spotify(keys.spotify);
+
+// -----------------------------------------------------------------------------
+// user input variables
+// -----------------------------------------------------------------------------
 // grabs the string after node & the file name in the command line, should be a command
 var userCommand = process.argv[2];
 // grabs the string after the command as the default query
 var userQuery = process.argv[3];
+// the userQuery will be formatted -- see formatQueryForDisplay
 var formattedUserQuery = null;
 
 // =============================================================================
@@ -36,7 +39,7 @@ var formattedUserQuery = null;
 // -----------------------------------------------------------------------------
 
 /* grab multiple strings (if user enters multiple words and uses spaces)
-and combines them into one single string
+and combines them into one single string -- can/should i combine this with the for loop?
 */
 function queryCombine(nextWordinQuery) {
     userQuery += "+" + nextWordinQuery;
@@ -47,11 +50,12 @@ combines them together
 */
 for (let i = 4; i < process.argv.length; i++) {
     queryCombine(process.argv[i]);
-    console.log(userQuery);
 }
 
 function formatQueryForDisplay(userQuery) {
+    if (userQuery != undefined){
     formattedUserQuery = userQuery.replace(/\+/g, " ");
+    }
 }
 
 
@@ -70,26 +74,36 @@ function getConcertInfo() {
 
 function displayConcertInfo(response) {
     formatQueryForDisplay(userQuery)
-    console.log(`
+    if (userQuery != undefined) {
+
+    
+        let output = `
 ---------------------------------------------------------------------------------
 Here are some upcoming concerts I found for ${formattedUserQuery}:
 ---------------------------------------------------------------------------------
-    `);
+    `;
     
-    for (let eventCount = 1; eventCount < 6; eventCount++) {
-        // grabbing the unformatted concert date
-        let concertDate = response.data[eventCount].datetime;
-        // reformatting with moment
-        let formattedConcertDate = moment(concertDate).format("MM/DD/YYYY");
-        // displaying event info to the terminal
-        console.log(`
+        for (let eventCount = 1; eventCount < 6; eventCount++) {
+            // grabbing the unformatted concert date
+            let concertDate = response.data[eventCount].datetime;
+            // reformatting with moment
+            let formattedConcertDate = moment(concertDate).format("MM/DD/YYYY");
+            // displaying event info to the terminal
+            output += `
 ---------------------------------------------------------------------------------
 Date: ${formattedConcertDate}
 Venue: ${response.data[eventCount].venue.name}
 Venue location: ${response.data[eventCount].venue.city}, ${response.data[eventCount].venue.country}
 ---------------------------------------------------------------------------------
-        `);
+            `;
+        }
+
+        console.log(output);
+        logOutputToTxtFile(output);
+    } else {
+        console.log("No band or artist name was entered.")
     }
+
 }
 
 // -----------------------------------------------------------------------------
@@ -104,7 +118,7 @@ function getSongInfo() {
         */
     }
     // requests data for the userQuery song name
-    spotify.search({ type: 'track', query: `${userQuery}`, limit: 5}, function(err, data) {
+    spotify.search({ type: 'track', query: `${userQuery}`, limit: 15}, function(err, data) {
         if (err) {
           return console.log('Error occurred: ' + err);
         }
@@ -115,22 +129,25 @@ function getSongInfo() {
 
 function displaySongInfo(data) {
     formatQueryForDisplay(userQuery)
-    console.log(`
+    let output = `
 ---------------------------------------------------------------------------------
 Here are some tracks I found when I searched for ${formattedUserQuery}:
 ---------------------------------------------------------------------------------
-        `);
+        `;
     // displays info for the first five songs that are found from the userQuery
-    for (let songResultNumber = 0; songResultNumber < 5; songResultNumber++) {
-    console.log(`
+    for (let songResultNumber = 0; songResultNumber < 15; songResultNumber++) {
+        output += `
 ---------------------------------------------------------------------------------
 Artist(s): ${data.tracks.items[songResultNumber].artists[0].name}
 Song name: ${data.tracks.items[songResultNumber].name}
 Preview link (if available): ${data.tracks.items[songResultNumber].preview_url}
 Appears on album: ${data.tracks.items[songResultNumber].album.name}
 ---------------------------------------------------------------------------------
-    `);
+        `;
     }
+
+    console.log(output);
+    logOutputToTxtFile(output);
 }
 
 // -----------------------------------------------------------------------------
@@ -138,10 +155,9 @@ Appears on album: ${data.tracks.items[songResultNumber].album.name}
 // -----------------------------------------------------------------------------
 // the user enters the movie-this command followed by a movie title
 function getMovieInfo() {
-    // console.log(userQuery);
     // if no movie entered, default to "Mr. Nobody"
     if (userQuery === undefined) {
-        userQuery = "Mr. Nobody.";
+        userQuery = "Mr. Nobody";
     }
 
     axios.get(`http://www.omdbapi.com/?t=${userQuery}&y=&plot=short&apikey=trilogy`)
@@ -152,7 +168,7 @@ function getMovieInfo() {
 
 function displayMovieInfo(response) {
     formatQueryForDisplay(userQuery)
-    var output = `
+    let output = `
 ---------------------------------------------------------------------------------
 Here is the film I found when I searched for ${formattedUserQuery}:
 ---------------------------------------------------------------------------------
@@ -170,7 +186,7 @@ Actors: ${response.data.Actors}
         `;
     console.log(output);
 
-logOutputToTxtFile(output)
+    logOutputToTxtFile(output)
 }
 
 // -----------------------------------------------------------------------------
@@ -197,6 +213,7 @@ function readRandomTxtFile() {
 
 // bonus: log the results
 function logOutputToTxtFile(output) {
+    // append the output from the search to the log.txt file
     fs.appendFile('log.txt', output, function(err) {
         if (err) {
             console.log(err)
@@ -206,12 +223,14 @@ function logOutputToTxtFile(output) {
     })
 }
 
+// -----------------------------------------------------------------------------
+// main switch case function to run LIRI with one of four user commands
+// -----------------------------------------------------------------------------
+
 function runLiri(userCommand) {
-    // switch case
     switch (userCommand) {
         case "concert-this":
             getConcertInfo()
-            // displayConcertInfo()
             break;
         case "spotify-this-song":
             getSongInfo()
@@ -221,9 +240,15 @@ function runLiri(userCommand) {
             break;
         case "do-what-it-says":
             readRandomTxtFile()
-        break;
+            break;
     }
 }
 
-// takes in user input and runs the appropriate functions / searches
+// =============================================================================
+// initialilze LIRI
+// =============================================================================
 runLiri(userCommand)
+
+// =============================================================================
+// end of code
+// =============================================================================
