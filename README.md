@@ -1,5 +1,5 @@
 # liri-node-app
-LIRI is similar to Apple's Siri: LIRI takes text queries about songs, musical groups, and movies via the CLI and outputs info on music, concerts, and/or films. LIRI is run in Node.JS. See LIRI in action here: (youtube link)
+LIRI is similar to Apple's Siri: LIRI takes text queries about songs, musical groups, and movies via the CLI and outputs info on music, concerts, and/or films. LIRI is run in Node.JS. See my LIRI bot in action here: [LIRI demo on YouTube](https://youtu.be/aPjqCJhzz98)
 
 When you are using Node.JS, you type `node liri.js` and then:
 
