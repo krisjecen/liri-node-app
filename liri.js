@@ -26,8 +26,10 @@ var spotify = new Spotify(keys.spotify);
 // grabs the string after node & the file name in the command line, should be a command
 var userCommand = process.argv[2];
 // grabs the string after the command as the default query
-var userQuery = process.argv[3];
+var userQuery = process.argv.slice(3).join(" ");
+
 // the userQuery will be formatted -- see formatQueryForDisplay
+// TODO: update/delete/reanalyze the need for this
 var formattedUserQuery = null;
 
 // =============================================================================
@@ -35,36 +37,10 @@ var formattedUserQuery = null;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-// userQuery formatting functions
-// -----------------------------------------------------------------------------
-
-/* grab multiple strings (if user enters multiple words and uses spaces)
-and combines them into one single string -- can/should i combine this with the for loop?
-*/
-function queryCombine(nextWordinQuery) {
-    userQuery += "+" + nextWordinQuery;
-}
-
-/* for any queries that are more than one word (string / entry) long, this for loop
-combines them together
-*/
-for (let i = 4; i < process.argv.length; i++) {
-    queryCombine(process.argv[i]);
-}
-
-function formatQueryForDisplay(userQuery) {
-    if (userQuery != undefined){
-    formattedUserQuery = userQuery.replace(/\+/g, " ");
-    }
-}
-
-
-// -----------------------------------------------------------------------------
 // Bands in Town API functions
 // -----------------------------------------------------------------------------
 // concert-this
 function getConcertInfo() {
-    // test case Skrillex (no user input yet)
     axios.get(`https://rest.bandsintown.com/artists/${userQuery}/events?app_id=codingbootcamp&date=upcoming`)
         .then(function (response) {
 
@@ -73,13 +49,12 @@ function getConcertInfo() {
 }
 
 function displayConcertInfo(response) {
-    formatQueryForDisplay(userQuery)
     if (userQuery != undefined) {
 
     
         let output = `
 ---------------------------------------------------------------------------------
-Here are some upcoming concerts I found for ${formattedUserQuery}:
+Here are some upcoming concerts I found for ${userQuery}:
 ---------------------------------------------------------------------------------
     `;
     
@@ -128,10 +103,9 @@ function getSongInfo() {
 }
 
 function displaySongInfo(data) {
-    formatQueryForDisplay(userQuery)
     let output = `
 ---------------------------------------------------------------------------------
-Here are some tracks I found when I searched for ${formattedUserQuery}:
+Here are some tracks I found when I searched for ${userQuery}:
 ---------------------------------------------------------------------------------
         `;
     // displays info for the first five songs that are found from the userQuery
@@ -167,10 +141,10 @@ function getMovieInfo() {
 }
 
 function displayMovieInfo(response) {
-    formatQueryForDisplay(userQuery)
+    // formatQueryForDisplay(userQuery)
     let output = `
 ---------------------------------------------------------------------------------
-Here is the film I found when I searched for ${formattedUserQuery}:
+Here is the film I found when I searched for ${userQuery}:
 ---------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------
